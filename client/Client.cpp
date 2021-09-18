@@ -65,12 +65,21 @@ void Client::sendFile() {
         char *toSend = file.getNext();
         toSendLength = (file.getLength() - bytesSent > BufferSize) ? BufferSize : file.getLength() - bytesSent;
 
-        if ((result = send(tcpSocket, toSend, toSendLength, 0)) == -1) {
-            std::cout << "Send error" << std::endl;
-            throw std::exception();
-        }
+        result = send(tcpSocket, toSend, toSendLength, 0);
+        switch (result) {
+            case (-1): {
+                std::cout << "Send error" << std::endl;
+                throw std::exception();
+            }
+            case (0): {
+                std::cout << "Server close connection" << std::endl;
+                return;
+            }
+            default: {
+                bytesSent += result;
+            }
 
-        bytesSent += result;
+        }
     }
 
     recvAnswer();
